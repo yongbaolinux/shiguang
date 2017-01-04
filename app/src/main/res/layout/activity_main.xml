@@ -21,10 +21,12 @@
             android:textColor="@android:color/white" />
     </android.support.v7.widget.Toolbar>
     <ImageView
+        android:layout_weight="100"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <TextView
+    <Button
+        android:id="@+id/loadImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:text="加载图片" />
 </LinearLayout>
