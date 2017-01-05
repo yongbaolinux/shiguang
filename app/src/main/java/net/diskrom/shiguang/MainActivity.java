@@ -1,6 +1,9 @@
 package net.diskrom.shiguang;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -29,5 +32,17 @@ public class MainActivity extends BaseActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private void getImages(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Uri imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                ContentResolver contentResolver = getApplicationContext().getContentResolver();
+                //根据图片类型查询
+                
+            }
+        }).start();
     }
 }
