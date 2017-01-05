@@ -20,10 +20,15 @@
             android:text="@string/app_name"
             android:textColor="@android:color/white" />
     </android.support.v7.widget.Toolbar>
-    <ImageView
+    <!--<ImageView
         android:layout_weight="100"
         android:layout_width="match_parent"
+        android:layout_height="match_parent" />-->
+
+    <GridView
+        android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
     <Button
         android:id="@+id/loadImage"
         android:layout_width="wrap_content"
