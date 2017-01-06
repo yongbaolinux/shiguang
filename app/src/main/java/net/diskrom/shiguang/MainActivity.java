@@ -6,16 +6,29 @@ import android.database.Cursor;
 import android.media.Image;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ImageView;
 
 import com.apkfuns.logutils.LogUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 public class MainActivity extends BaseActivity {
 
     private Button loadImage;
+    private GridView gridView;
+    private List<String> imagesPath = new ArrayList<String>();        //存放所有图片地址
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +39,8 @@ public class MainActivity extends BaseActivity {
 
     private void init(){
         loadImage = (Button) findViewById(R.id.loadImage);
+        gridView = (GridView) findViewById(R.id.gridView);
+        //gridView.setAdapter();
         loadImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -34,12 +49,12 @@ public class MainActivity extends BaseActivity {
                 //intent.setPackage("com.miui.gallery");
                 //intent.setPackage("com.android.gallery3d");
                 //startActivity(intent);
-                getImages();
+                //getImages();
             }
         });
     }
 
-    private void getImages(){
+    /*private void getImages(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -57,9 +72,32 @@ public class MainActivity extends BaseActivity {
                     //获取图片的路径
                     String path = cursor.getString(cursor
                             .getColumnIndex(MediaStore.Images.Media.DATA));
-                    LogUtils.v(path);
+                    imagesPath.add(path);
                 }
+                LogUtils.v(imagesPath);
             }
         }).start();
+    }*/
+}
+
+public class CustomGridViewAdapter extends BaseAdapter {
+    public View getView(int position, View view, ViewGroup viewGroup){
+        ImageView imageView = new ImageView(MainActivity.this,null); // 声明ImageView的对象
+        return imageView;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return 0;
+    }
+
+    @Override
+    public int getCount() {
+        return 0;
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return null;
     }
 }
