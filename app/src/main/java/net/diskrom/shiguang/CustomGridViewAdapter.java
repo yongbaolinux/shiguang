@@ -1,5 +1,6 @@
 package net.diskrom.shiguang;
 
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -10,8 +11,13 @@ import android.widget.ImageView;
  */
 
 public class CustomGridViewAdapter extends BaseAdapter {
+
+    private Context mContext;
+    public CustomGridViewAdapter(Context context){
+        mContext = context;
+    }
     public View getView(int position, View view, ViewGroup viewGroup){
-        ImageView imageView = new ImageView(this); // 声明ImageView的对象
+        ImageView imageView = new ImageView(mContext); // 声明ImageView的对象
         return imageView;
     }
 

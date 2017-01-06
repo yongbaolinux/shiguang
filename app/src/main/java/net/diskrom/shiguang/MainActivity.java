@@ -1,6 +1,7 @@
 package net.diskrom.shiguang;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.media.Image;
@@ -54,7 +55,7 @@ public class MainActivity extends BaseActivity {
         });
     }
 
-    /*private void getImages(){
+    private void getImages(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -74,30 +75,9 @@ public class MainActivity extends BaseActivity {
                             .getColumnIndex(MediaStore.Images.Media.DATA));
                     imagesPath.add(path);
                 }
-                LogUtils.v(imagesPath);
+                //LogUtils.v(imagesPath);
             }
         }).start();
-    }*/
-}
-
-public class CustomGridViewAdapter extends BaseAdapter {
-    public View getView(int position, View view, ViewGroup viewGroup){
-        ImageView imageView = new ImageView(MainActivity.this,null); // 声明ImageView的对象
-        return imageView;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-
-    @Override
-    public int getCount() {
-        return 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return null;
     }
 }
+
