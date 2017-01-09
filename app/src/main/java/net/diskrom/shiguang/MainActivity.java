@@ -19,27 +19,26 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends BaseActivity {
-
     private static final int GET_EXTERNAL_IMAGES_FINISHED = 1;  //消息类型 读取完所有SD卡上的图片
-
-    //handler
-    private Handler handler = new Handler() {
-
-        public void handleMessage(Message msg){
-            if(msg.what == GET_EXTERNAL_IMAGES_FINISHED){
-                //拿到消息数据后开始组装供 gridview 使用的数据对象
-                for(int i = 0;i < imagesPath.size(); i++){
-
-                }
-                LogUtils.v(imagesPath);
-            }
-        }
-    };
     private Button loadImage;
     private GridView gridView;
     private List<String> imagesPath = new ArrayList<String>();        //存放所有图片地址
+    //private HashMap<String,String> gridViewItemData = new HashMap<>();  //用一个hashmap存放每个gridItem 数据
+    private Handler handler = new Handler() {
+        public void handleMessage(Message msg){
+            if(msg.what == GET_EXTERNAL_IMAGES_FINISHED){
+                //获得消息通知后开始组装供 gridview 使用的数据对象
+                /*for(int i = 0;i < imagesPath.size(); i++){
 
-    private HashMap<String,String> gridViewItemData = new HashMap<>();  //用一个hashmap存放每个gridItem 数据
+                }*/
+                LogUtils.v(imagesPath.subList(0,10));
+                CustomGridViewAdapter customGridViewAdapter = new CustomGridViewAdapter(MainActivity.this,imagesPath.subList(0,10));
+                //构造
+                gridView.setAdapter(customGridViewAdapter);
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +50,6 @@ public class MainActivity extends BaseActivity {
     private void init(){
         loadImage = (Button) findViewById(R.id.loadImage);
         gridView = (GridView) findViewById(R.id.gridView);
-        //构造
-        //gridView.setAdapter();
         loadImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
