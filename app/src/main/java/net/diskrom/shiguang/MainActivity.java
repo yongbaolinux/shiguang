@@ -1,35 +1,45 @@
 package net.diskrom.shiguang;
 
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.media.Image;
 import android.net.Uri;
+import android.os.Message;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageView;
+import android.os.Handler;
 
 import com.apkfuns.logutils.LogUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 
 public class MainActivity extends BaseActivity {
 
+    private static final int GET_EXTERNAL_IMAGES_FINISHED = 1;  //消息类型 读取完所有SD卡上的图片
+
+    //handler
+    private Handler handler = new Handler() {
+
+        public void handleMessage(Message msg){
+            if(msg.what == GET_EXTERNAL_IMAGES_FINISHED){
+                //拿到消息数据后开始组装供 gridview 使用的数据对象
+                for(int i = 0;i < imagesPath.size(); i++){
+
+                }
+                LogUtils.v(imagesPath);
+            }
+        }
+    };
     private Button loadImage;
     private GridView gridView;
     private List<String> imagesPath = new ArrayList<String>();        //存放所有图片地址
+
+    private HashMap<String,String> gridViewItemData = new HashMap<>();  //用一个hashmap存放每个gridItem 数据
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +51,7 @@ public class MainActivity extends BaseActivity {
     private void init(){
         loadImage = (Button) findViewById(R.id.loadImage);
         gridView = (GridView) findViewById(R.id.gridView);
+        //构造
         //gridView.setAdapter();
         loadImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,7 +61,7 @@ public class MainActivity extends BaseActivity {
                 //intent.setPackage("com.miui.gallery");
                 //intent.setPackage("com.android.gallery3d");
                 //startActivity(intent);
-                //getImages();
+                getImages();
             }
         });
     }
@@ -76,6 +87,10 @@ public class MainActivity extends BaseActivity {
                     imagesPath.add(path);
                 }
                 //LogUtils.v(imagesPath);
+                Message msg = new Message();
+                msg.what = GET_EXTERNAL_IMAGES_FINISHED;
+                //msg.obj = imagesPath;
+                handler.sendMessage(msg);       //把图片地址信息 以message的方式发送给主线程
             }
         }).start();
     }

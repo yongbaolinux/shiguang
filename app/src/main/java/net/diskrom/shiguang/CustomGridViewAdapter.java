@@ -7,7 +7,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
 /**
- * Created by jsb-hdp-0 on 2017/1/6.
+ * Created by yongbaolinux on 2017/1/6.
+ *  自定义gridview adapter
  */
 
 public class CustomGridViewAdapter extends BaseAdapter {
