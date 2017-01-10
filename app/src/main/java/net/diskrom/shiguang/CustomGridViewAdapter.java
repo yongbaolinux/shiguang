@@ -1,8 +1,10 @@
 package net.diskrom.shiguang;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,10 +37,8 @@ public class CustomGridViewAdapter extends BaseAdapter {
         if(layoutInflater != null) {
             view = layoutInflater.inflate(R.layout.grid_view_item,null);
             ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
-            //把图片地址转换为 bitmap 并设置 imageview
-            LogUtils.v(list.get(position).toString());
-            Bitmap bitmap = BitmapFactory.decodeFile(list.get(position).toString());
-            imageView.setImageBitmap(bitmap);
+
+            imageView.setImageBitmap((Bitmap)list.get(position));
         }
         return view;
     }
@@ -57,4 +57,5 @@ public class CustomGridViewAdapter extends BaseAdapter {
     public Object getItem(int position) {
         return list.get(position);
     }
+
 }
