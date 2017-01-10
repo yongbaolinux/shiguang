@@ -94,6 +94,10 @@ public class MainActivity extends BaseActivity {
                 String where = null;        //没有查询条件 即全部查询出来
                 String order = MediaStore.Images.Media.DATE_MODIFIED + " desc limit 100 offset 0 ";       //查询结果排序 按修改日期 逆序
                 Cursor cursor = contentResolver.query(imageUri,columns,where,null,order);
+                if(cursor == null){
+                    LogUtils.v("cursor初始化失败");
+                    return;
+                }
                 assert(cursor!=null);
                 //遍历cursor
                 while(cursor.moveToNext()){
@@ -112,7 +116,7 @@ public class MainActivity extends BaseActivity {
                     int toHeiht = toWidth;
                     //int toHeight = options.outHeight * toWidth / options.outWidth;
                     options.inJustDecodeBounds = false;
-                    options.inPreferredConfig = Bitmap.Config.ARGB_4444;
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;    //ARGB_4444的图像质量太差
                     options.inSampleSize = options.outWidth / toWidth;      //压缩比例
                     Bitmap bitmap = BitmapFactory.decodeFile(path,options);
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, toWidth, toHeiht);
