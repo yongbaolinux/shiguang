@@ -3,6 +3,7 @@ package net.diskrom.shiguang;
 import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
@@ -63,6 +64,29 @@ public class BaseActivity extends AppCompatActivity {
             } else {
                 return Float.parseFloat(string);
             }
+        }
+    }
+
+    public screenProperty getScreen(){
+        screenProperty SP = new screenProperty();
+        DisplayMetrics metric = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metric);
+        SP.width = metric.widthPixels;      // 屏幕宽度（像素）
+        SP.height = metric.heightPixels;    // 屏幕高度（像素）
+        SP.density = metric.density;        // 屏幕宽度（像素）
+        SP.densityDpi = metric.densityDpi;  // 屏幕高度（像素）
+        return SP;
+    }
+
+    //屏幕属性内部类
+    public class screenProperty{
+        public int width;      //屏幕宽度
+        public int height;     //屏幕高度
+        public float density;  //屏幕密度
+        public int densityDpi; //屏幕密度DPI
+
+        public screenProperty(){
+
         }
     }
 }
