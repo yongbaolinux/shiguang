@@ -11,6 +11,7 @@ import android.provider.MediaStore;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.os.Handler;
@@ -63,7 +64,14 @@ public class MainActivity extends BaseActivity {
     private void init(){
         loadImage = (Button) findViewById(R.id.loadImage);
         gridView = (GridView) findViewById(R.id.gridView);
-
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //启动意图
+                Intent intent = new Intent(MainActivity.this,BrowseImageActivity.class);
+                startActivity(intent);
+            }
+        });
         loadImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
