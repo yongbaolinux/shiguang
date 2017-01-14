@@ -71,6 +71,7 @@ public class MainActivity extends BaseActivity {
                 Intent intent = new Intent(MainActivity.this,BrowseImageActivity.class);
                 startActivity(intent);
             }
+
         });
         loadImage.setOnClickListener(new View.OnClickListener() {
             @Override
