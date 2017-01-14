@@ -35,8 +35,9 @@ public class MainActivity extends BaseActivity {
     private Button loadImage;
     private GridView gridView;
     private List<String> imagesPath = new ArrayList<String>();        //存放查询出的图片路径
-    private List<Bitmap> imagesBitmap = new ArrayList<Bitmap>();      //存放查询出的图片资源
-    CustomGridViewAdapter customGridViewAdapter;                        //
+    private List<Bitmap> imagesBitmap = new ArrayList<Bitmap>();      //存放查询出的图片资源 list方式存储
+    public static HashMap<String,Bitmap> imagesBitmapMap = new HashMap<String,Bitmap>();    //存放查询出的图片资源 hashmap方式存储
+    CustomGridViewAdapter customGridViewAdapter;                        //gridview 数据适配器
 
     //private HashMap<String,String> gridViewItemData = new HashMap<>();  //用一个hashmap存放每个gridItem 数据
     private Handler handler = new Handler() {
@@ -69,6 +70,8 @@ public class MainActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //启动意图
                 Intent intent = new Intent(MainActivity.this,BrowseImageActivity.class);
+                String path = imagesPath.get(position);
+                intent.putExtra("path",path);
                 startActivity(intent);
             }
 
@@ -130,6 +133,7 @@ public class MainActivity extends BaseActivity {
                     Bitmap bitmap = BitmapFactory.decodeFile(path,options);
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, toWidth, toHeiht);
                     imagesBitmap.add(bitmap);
+                    imagesBitmapMap.put(path,bitmap);
                     //定义待发送的消息体
                     Message msg = new Message();
                     msg.what = GET_EXTERNAL_IMAGES_FINISHED;
