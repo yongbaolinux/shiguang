@@ -70,6 +70,8 @@ public class MainActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //启动意图
                 Intent intent = new Intent(MainActivity.this,BrowseImageActivity.class);
+                String path = imagesPath.get(position);
+                intent.putExtra("path",path);
                 startActivity(intent);
             }
         });
