@@ -92,7 +92,7 @@ public class MainActivity extends BaseActivity {
         customGridViewAdapter = new CustomGridViewAdapter(MainActivity.this,imagesBitmap);
     }
 
-    //获取图片地址的
+    //获取图片地址的线程
     private void getImages(){
         new Thread(new Runnable() {
             @Override
