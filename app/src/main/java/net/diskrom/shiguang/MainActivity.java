@@ -107,7 +107,7 @@ public class MainActivity extends BaseActivity {
                 //根据图片类型查询
                 String [] columns = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.ORIENTATION};   //要查询的列
                 String where = null;        //没有查询条件 即全部查询出来
-                String order = MediaStore.Images.Media.DATE_MODIFIED + " desc limit 2 offset 0 ";       //查询结果排序 按修改日期 逆序
+                String order = MediaStore.Images.Media.DATE_MODIFIED + " desc limit 20 offset 0 ";       //查询结果排序 按修改日期 逆序
                 Cursor cursor = contentResolver.query(imageUri,columns,where,null,order);
                 if(cursor == null){
                     LogUtils.v("cursor初始化失败");
@@ -125,21 +125,27 @@ public class MainActivity extends BaseActivity {
                     options.inJustDecodeBounds = true;
                     BitmapFactory.decodeFile(path,options);
 
-                    //横向排列三张图片(
+                    int srcWidth = options.outWidth;
+                    int srcHeight = options.outHeight;
+                    //横向排列三张图片
                     screenProperty sp = getScreen();
                     int toWidth = (sp.width - (countPerRow + 1) * pixPadding) / countPerRow;      //希望压缩的宽度值
                     int toHeiht = toWidth;
                     //int toHeight = options.outHeight * toWidth / options.outWidth;
                     options.inJustDecodeBounds = false;
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;    //ARGB_4444的图像质量太差
-                    options.inSampleSize = options.outWidth / toWidth;      //压缩比例
+                    options.inSampleSize = srcWidth / toWidth;      //压缩比例
                     Bitmap bitmap = BitmapFactory.decodeFile(path,options);
-                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, toWidth, toHeiht);
+                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, toWidth, toHeiht); //裁剪缩略图
                     imagesBitmap.add(bitmap);
-                    //原图bitmap
-                    Bitmap srcBitmap = BitmapFactory.decodeFile(path);
+                    //对原图稍加压缩 作为大图展示(需要展示的尺寸即ImageView的尺寸)
+                    int viewWidth = sp.width - 20;      //压缩宽度即可 高度自适应
+                    options.inSampleSize = srcWidth / viewWidth;      //压缩比例
+                    /*Bitmap srcBitmap = BitmapFactory.decodeFile(path,options);
+                    if(path != null && srcBitmap != null) {
+                        myApplication.putImageToMemoryCache(path, srcBitmap);
+                    }*/
 
-                    myApplication.putImageToMemoryCache(path,srcBitmap);
                     //LogUtils.v(getImageFromMemoryCache(path));
                     //imagesBitmapMap.put(path,bitmap);
                     //定义待发送的消息体
