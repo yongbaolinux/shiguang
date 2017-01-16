@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.os.Bundle;
+import android.util.LruCache;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,6 +39,7 @@ public class MainActivity extends BaseActivity {
     private List<Bitmap> imagesBitmap = new ArrayList<Bitmap>();      //存放查询出的图片资源 list方式存储
     public static HashMap<String,Bitmap> imagesBitmapMap = new HashMap<String,Bitmap>();    //存放查询出的图片资源 hashmap方式存储
     CustomGridViewAdapter customGridViewAdapter;                        //gridview 数据适配器
+
 
     //private HashMap<String,String> gridViewItemData = new HashMap<>();  //用一个hashmap存放每个gridItem 数据
     private Handler handler = new Handler() {
@@ -103,7 +105,7 @@ public class MainActivity extends BaseActivity {
                 //根据图片类型查询
                 String [] columns = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.ORIENTATION};   //要查询的列
                 String where = null;        //没有查询条件 即全部查询出来
-                String order = MediaStore.Images.Media.DATE_MODIFIED + " desc limit 100 offset 0 ";       //查询结果排序 按修改日期 逆序
+                String order = MediaStore.Images.Media.DATE_MODIFIED + " desc limit 2 offset 0 ";       //查询结果排序 按修改日期 逆序
                 Cursor cursor = contentResolver.query(imageUri,columns,where,null,order);
                 if(cursor == null){
                     LogUtils.v("cursor初始化失败");
@@ -132,7 +134,10 @@ public class MainActivity extends BaseActivity {
                     Bitmap bitmap = BitmapFactory.decodeFile(path,options);
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, toWidth, toHeiht);
                     imagesBitmap.add(bitmap);
-                    imagesBitmapMap.put(path,bitmap);
+                    //原图bitmap
+                    srcBitmap = BitmapFactory.decodeFile(path);
+                    memoryCache.put(path,srcBitmap);
+                    //imagesBitmapMap.put(path,bitmap);
                     //定义待发送的消息体
                     Message msg = new Message();
                     msg.what = GET_EXTERNAL_IMAGES_FINISHED;

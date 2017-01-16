@@ -11,7 +11,7 @@ import android.widget.ImageView;
 
 import com.apkfuns.logutils.LogUtils;
 
-public class BrowseImageActivity extends AppCompatActivity {
+public class BrowseImageActivity extends BaseActivity {
     private Bitmap srcImageBitmap;  //维护一个存储原图Bitmap的变量
     private static final int LOAD_SOURCE_IMAGE_FINISHED = 1;  //消息类型 原图加载完成
     private ImageView browseImage;
@@ -30,9 +30,12 @@ public class BrowseImageActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String path = intent.getStringExtra("path");
         //加载已经预存的 bitmap
-        Bitmap bitmap = MainActivity.imagesBitmapMap.get(path);
+        //Bitmap bitmap = MainActivity.imagesBitmapMap.get(path);
+        LogUtils.v(memoryCache);
+        Bitmap bitmap = memoryCache.get(path);
         browseImage.setImageBitmap(bitmap);
-        loadSrcImage(path);
+        //loadSrcImage(path);
+        //LogUtils.v(Runtime.getRuntime().maxMemory()/1024);
     }
 
     private void init(){
