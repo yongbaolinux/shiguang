@@ -22,8 +22,11 @@ public class BrowseImageActivity extends BaseActivity {
             }
         }
     };
+    private MyApp myApplication;                         //维护一个application实例
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        myApplication = (MyApp) getApplication();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.browse_image);
         init();
@@ -31,11 +34,10 @@ public class BrowseImageActivity extends BaseActivity {
         String path = intent.getStringExtra("path");
         //加载已经预存的 bitmap
         //Bitmap bitmap = MainActivity.imagesBitmapMap.get(path);
-        LogUtils.v(memoryCache);
-        Bitmap bitmap = memoryCache.get(path);
+
+        Bitmap bitmap = myApplication.getImageFromMemoryCache(path);
         browseImage.setImageBitmap(bitmap);
         //loadSrcImage(path);
-        //LogUtils.v(Runtime.getRuntime().maxMemory()/1024);
     }
 
     private void init(){

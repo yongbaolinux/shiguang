@@ -13,33 +13,14 @@ import android.widget.TextView;
 public class BaseActivity extends AppCompatActivity {
 
     private AlertDialog commonDialog;               //维护一个全局的风格统一的dialog
-    protected Bitmap srcBitmap;                     //维护一个原图 Bitmap 不然在线程中while循环中每次都new一个Bitmap 很容易OOM
-    protected LruCache<String,Bitmap> memoryCache;   //手机缓存对象 基类中用 protected修饰 被继承后才能被访问到
+    //protected static LruCache<String,Bitmap> memoryCache;   //手机缓存对象 基类中用 protected修饰 被继承后才能被访问到
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //计算每个进程所能使用的最大内存的 1/5 作为内存缓存(单位:KB)
-        int maxCacheSize = (int)Runtime.getRuntime().maxMemory()/1024/5;
-        memoryCache = new LruCache<String, Bitmap>(maxCacheSize){
-            //返回每张图片的大小
-            protected int sizeOf(Bitmap bitmap){
-                return bitmap.getByteCount()/1024;
-            }
-        };
+
     }
 
-    //往内存缓存对象中添加图片
-    protected void putImageToMemoryCache(String key,Bitmap bitmap){
-        if(getImageFromMemoryCache(key) == null){
-            memoryCache.put(key,bitmap);
-        }
-    }
-
-    //从内存缓存对象中获取图片
-    protected Bitmap getImageFromMemoryCache(String key){
-        return memoryCache.get(key);
-    }
 
     /**
      * 应用统一风格对话框

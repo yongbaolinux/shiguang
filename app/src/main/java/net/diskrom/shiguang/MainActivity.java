@@ -39,7 +39,7 @@ public class MainActivity extends BaseActivity {
     private List<Bitmap> imagesBitmap = new ArrayList<Bitmap>();      //存放查询出的图片资源 list方式存储
     public static HashMap<String,Bitmap> imagesBitmapMap = new HashMap<String,Bitmap>();    //存放查询出的图片资源 hashmap方式存储
     CustomGridViewAdapter customGridViewAdapter;                        //gridview 数据适配器
-
+    private MyApp myApplication;                         //维护一个application实例
 
     //private HashMap<String,String> gridViewItemData = new HashMap<>();  //用一个hashmap存放每个gridItem 数据
     private Handler handler = new Handler() {
@@ -59,6 +59,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        myApplication = (MyApp) getApplication();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         init();
@@ -67,6 +68,7 @@ public class MainActivity extends BaseActivity {
     private void init(){
         loadImage = (Button) findViewById(R.id.loadImage);
         gridView = (GridView) findViewById(R.id.gridView);
+
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -135,8 +137,10 @@ public class MainActivity extends BaseActivity {
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, toWidth, toHeiht);
                     imagesBitmap.add(bitmap);
                     //原图bitmap
-                    srcBitmap = BitmapFactory.decodeFile(path);
-                    memoryCache.put(path,srcBitmap);
+                    Bitmap srcBitmap = BitmapFactory.decodeFile(path);
+
+                    myApplication.putImageToMemoryCache(path,srcBitmap);
+                    //LogUtils.v(getImageFromMemoryCache(path));
                     //imagesBitmapMap.put(path,bitmap);
                     //定义待发送的消息体
                     Message msg = new Message();
