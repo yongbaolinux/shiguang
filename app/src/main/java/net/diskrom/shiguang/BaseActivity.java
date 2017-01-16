@@ -1,21 +1,26 @@
 package net.diskrom.shiguang;
 
 import android.app.AlertDialog;
+import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.LruCache;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
 public class BaseActivity extends AppCompatActivity {
 
-    private AlertDialog commonDialog;       //维护一个全局的风格统一的dialog
+    private AlertDialog commonDialog;               //维护一个全局的风格统一的dialog
+    //protected static LruCache<String,Bitmap> memoryCache;   //手机缓存对象 基类中用 protected修饰 被继承后才能被访问到
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
+
 
     /**
      * 应用统一风格对话框

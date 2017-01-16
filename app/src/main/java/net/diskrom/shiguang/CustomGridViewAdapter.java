@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ public class CustomGridViewAdapter extends BaseAdapter {
     private Context mContext;
     private List list;
     private LayoutInflater layoutInflater;
+
 
     public CustomGridViewAdapter(Context context, List list){
         mContext = context;
