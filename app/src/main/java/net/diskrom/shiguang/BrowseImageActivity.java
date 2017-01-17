@@ -13,6 +13,10 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.apkfuns.logutils.LogUtils;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 
 public class BrowseImageActivity extends BaseActivity {
     private Bitmap srcImageBitmap;  //维护一个存储原图Bitmap的变量
@@ -48,7 +52,20 @@ public class BrowseImageActivity extends BaseActivity {
         //Bitmap bitmap = MainActivity.imagesBitmapMap.get(path);
         //Bitmap bitmap = myApplication.getImageFromMemoryCache(path);
         //browseImage.setImageBitmap(bitmap);
-        loadSrcImage(path);
+        //loadSrcImage(path);
+        Glide.with(BrowseImageActivity.this).load(path).into(new GlideDrawableImageViewTarget(browseImage) {
+            @Override
+            public void onResourceReady(GlideDrawable drawable, GlideAnimation anim) {
+                super.onResourceReady(drawable, anim);
+                //在这里添加一些图片加载完成的操作
+                quse.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(BrowseImageActivity.this,"hello",Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
     }
 
     private void init(){

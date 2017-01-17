@@ -108,7 +108,7 @@ public class MainActivity extends BaseActivity {
                 //根据图片类型查询
                 String [] columns = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.ORIENTATION};   //要查询的列
                 String where = null;        //没有查询条件 即全部查询出来
-                String order = MediaStore.Images.Media.DATE_MODIFIED + " desc limit 20 offset 0 ";       //查询结果排序 按修改日期 逆序
+                String order = MediaStore.Images.Media.DATE_MODIFIED + " desc limit 100 offset 0 ";       //查询结果排序 按修改日期 逆序
                 Cursor cursor = contentResolver.query(imageUri,columns,where,null,order);
                 if(cursor == null){
                     LogUtils.v("cursor初始化失败");

@@ -35,14 +35,14 @@ public class CustomGridViewAdapter extends BaseAdapter {
     }
 
     public View getView(int position, View convertView, ViewGroup viewGroup){
-        View view = null;
         if(layoutInflater != null) {
-            view = layoutInflater.inflate(R.layout.grid_view_item,null);
-            ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
-
-            imageView.setImageBitmap((Bitmap)list.get(position));
+            if(convertView == null) {
+                convertView = layoutInflater.inflate(R.layout.grid_view_item, null);
+                ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
+                imageView.setImageBitmap((Bitmap) list.get(position));
+            }
         }
-        return view;
+        return convertView;
     }
 
     @Override
