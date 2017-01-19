@@ -37,7 +37,7 @@
             android:layout_height="match_parent"
             android:orientation="horizontal">
             <LinearLayout
-                android:id="@+id/quse"
+                android:id="@+id/desaturate"
                 android:padding="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
             <LinearLayout
-                android:id="@+id/baohedu"
+                android:id="@+id/desaturate2"
                 android:padding="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -61,7 +61,22 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
                 <TextView
-                    android:text="饱和度"
+                    android:text="像素去色"
+                    android:textSize="20sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/sketch"
+                android:padding="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <TextView
+                    android:text="素描"
                     android:textSize="20sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />

@@ -30,14 +30,16 @@ public class BrowseImageActivity extends BaseActivity {
     private Bitmap srcImageBitmap;  //维护一个存储原图Bitmap的变量
     private static final int LOAD_SOURCE_IMAGE_FINISHED = 1;  //消息类型 原图加载完成
     private ImageView browseImage;
-    private LinearLayout quse;
+    private LinearLayout desaturate;            //去色
+    private LinearLayout desaturate2;           //自定义算法去色
+    private LinearLayout sketch;                //素描
 
     private Handler handler = new Handler(){
         public void handleMessage(Message msg){
             if(msg.what == LOAD_SOURCE_IMAGE_FINISHED){
                 browseImage.setImageBitmap(srcImageBitmap);
                 //图片加载完成后绑定图片处理动作
-                quse.setOnClickListener(new View.OnClickListener() {
+                desaturate.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Toast.makeText(BrowseImageActivity.this,"hello",Toast.LENGTH_LONG).show();
@@ -66,7 +68,7 @@ public class BrowseImageActivity extends BaseActivity {
             public void onResourceReady(final GlideDrawable drawable, GlideAnimation anim) {
                 super.onResourceReady(drawable, anim);
                 //在这里添加一些图片加载完成的操作
-                quse.setOnClickListener(new View.OnClickListener() {
+                desaturate.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //1、从drawable 转化为 bitmap
@@ -87,6 +89,25 @@ public class BrowseImageActivity extends BaseActivity {
                         browseImage.setImageBitmap(bmpGrayscale);
                     }
                 });
+
+                //自定义算法去色
+                desaturate2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //直接从ImageView控件中获取bitmap
+                        Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
+                        Bitmap bitmap = desaturate(bitmapOrigin);
+                        browseImage.setImageBitmap(bitmap);
+                    }
+                });
+
+                //素描
+                sketch.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                });
             }
         });
 
@@ -101,7 +122,9 @@ public class BrowseImageActivity extends BaseActivity {
 
     private void init(){
         browseImage = (ImageView) findViewById(R.id.browseImage);
-        quse = (LinearLayout) findViewById(R.id.quse);
+        desaturate = (LinearLayout) findViewById(R.id.desaturate);
+        desaturate2 = (LinearLayout) findViewById(R.id.desaturate2);
+        sketch = (LinearLayout) findViewById(R.id.sketch);
     }
 
     //开启新的线程加载原图
@@ -116,6 +139,30 @@ public class BrowseImageActivity extends BaseActivity {
                 handler.sendMessage(msg);
             }
         }).start();
+    }
+
+    //自定义去色算法
+    private Bitmap desaturate(Bitmap bitmapOrigin){
+        int picHeight = bitmapOrigin.getHeight();
+        int picWidth = bitmapOrigin.getWidth();
+
+        int[] pixels = new int[picWidth * picHeight];
+        bitmapOrigin.getPixels(pixels, 0, picWidth, 0, 0, picWidth, picHeight);
+
+        for (int i = 0; i < picHeight; ++i) {
+            for (int j = 0; j < picWidth; ++j) {
+                int index = i * picWidth + j;
+                int color = pixels[index];
+                int r = (color & 0x00ff0000) >> 16;     //R值
+                int g = (color & 0x0000ff00) >> 8;      //G值
+                int b = (color & 0x000000ff);           //B值
+                int grey = (int) (r * 0.299 + g * 0.587 + b * 0.114);   //盛行的 0.299-0.587-0.114去色算法
+                pixels[index] = grey << 16 | grey << 8 | grey | 0xff000000;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(pixels, picWidth, picHeight,
+                Bitmap.Config.ARGB_8888);
+        return bitmap;
     }
 
 
