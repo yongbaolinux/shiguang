@@ -107,8 +107,8 @@ public class BrowseImageActivity extends BaseActivity {
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
                         Bitmap bitmap = desaturate(bitmapOrigin);   //去色
-                        Bitmap bitmap2 = reverseColor(bitmap);      //反相
-                        browseImage.setImageBitmap(bitmap2);
+                        //Bitmap bitmap2 = reverseColor(bitmap);      //反相
+                        browseImage.setImageBitmap(bitmap);
                     }
                 });
             }
@@ -191,5 +191,30 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
-
+    //高斯模糊
+    private Bitmap gaussianBlur(Bitmap bitmapOrigin){
+        final int RADIUS = 1;     //定义滤波矩阵半径
+        final int[] filterMatrix = new int[]{0,0,0,0,1,0,0,0,0};
+        int picHeight = bitmapOrigin.getHeight();
+        int picWidth = bitmapOrigin.getWidth();
+        int[] pixels = new int[picWidth * picHeight];
+        int[] pixelsRes = pixels;
+        //只计算离图像边缘大于等于滤波矩阵半径的像素点
+        for(int y = RADIUS;y <= picHeight-RADIUS; y++){
+            for(int x = RADIUS;x <= picWidth-RADIUS; x++){
+                int filterMatrixIndex = 0;      //在滤波矩阵中的索引
+                int sum = 0;                    //存放滤波积和
+                for(int tempY = y-RADIUS; tempY <= y + RADIUS; tempY++){
+                    for(int tempX = x - RADIUS; tempX <= x + RADIUS; tempX++){
+                        sum += pixels[tempY*picWidth + tempX]*filterMatrix[filterMatrixIndex];
+                        filterMatrixIndex++;
+                    }
+                }
+                pixelsRes[y*picWidth + x] = sum;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(pixelsRes, picWidth, picHeight,
+                Bitmap.Config.ARGB_8888);
+        return bitmap;
+    }
 }
