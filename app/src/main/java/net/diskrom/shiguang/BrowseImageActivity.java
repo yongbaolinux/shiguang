@@ -190,4 +190,6 @@ public class BrowseImageActivity extends BaseActivity {
                 Bitmap.Config.ARGB_8888);
         return bitmap;
     }
+
+
 }
