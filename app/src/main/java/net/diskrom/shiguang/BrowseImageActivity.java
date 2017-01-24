@@ -33,6 +33,7 @@ public class BrowseImageActivity extends BaseActivity {
     private LinearLayout desaturate;            //去色
     private LinearLayout desaturate2;           //自定义算法去色
     private LinearLayout sketch;                //素描
+    private LinearLayout gaussian;              //高斯模糊
 
     private Handler handler = new Handler(){
         public void handleMessage(Message msg){
@@ -107,7 +108,17 @@ public class BrowseImageActivity extends BaseActivity {
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
                         Bitmap bitmap = desaturate(bitmapOrigin);   //去色
-                        //Bitmap bitmap2 = reverseColor(bitmap);      //反相
+                        Bitmap bitmap2 = reverseColor(bitmap);      //反相
+                        browseImage.setImageBitmap(bitmap2);
+                    }
+                });
+
+                //高斯模糊
+                gaussian.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
+                        Bitmap bitmap = gaussianBlur(bitmapOrigin);
                         browseImage.setImageBitmap(bitmap);
                     }
                 });
@@ -128,6 +139,7 @@ public class BrowseImageActivity extends BaseActivity {
         desaturate = (LinearLayout) findViewById(R.id.desaturate);
         desaturate2 = (LinearLayout) findViewById(R.id.desaturate2);
         sketch = (LinearLayout) findViewById(R.id.sketch);
+        gaussian = (LinearLayout) findViewById(R.id.gaussian);
     }
 
     //开启新的线程加载原图
