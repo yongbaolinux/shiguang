@@ -141,7 +141,7 @@ public class BrowseImageActivity extends BaseActivity {
         }).start();
     }
 
-    //自定义去色算法
+    //自定义去色算法(0.299-0.587-0.114去色算法)
     private Bitmap desaturate(Bitmap bitmapOrigin){
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
@@ -156,7 +156,7 @@ public class BrowseImageActivity extends BaseActivity {
                 int r = (color & 0x00ff0000) >> 16;     //R值
                 int g = (color & 0x0000ff00) >> 8;      //G值
                 int b = (color & 0x000000ff);           //B值
-                int grey = (int) (r * 0.299 + g * 0.587 + b * 0.114);   //盛行的 0.299-0.587-0.114去色算法
+                int grey = (int) (r * 0.299 + g * 0.587 + b * 0.114);
                 pixels[index] = grey << 16 | grey << 8 | grey | 0xff000000;
             }
         }
@@ -165,5 +165,5 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
-
+    //private
 }
