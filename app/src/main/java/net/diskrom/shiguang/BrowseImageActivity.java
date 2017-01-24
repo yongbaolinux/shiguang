@@ -105,7 +105,10 @@ public class BrowseImageActivity extends BaseActivity {
                 sketch.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
+                        Bitmap bitmap = desaturate(bitmapOrigin);   //去色
+                        Bitmap bitmap2 = reverseColor(bitmap);      //反相
+                        browseImage.setImageBitmap(bitmap2);
                     }
                 });
             }
@@ -141,7 +144,7 @@ public class BrowseImageActivity extends BaseActivity {
         }).start();
     }
 
-    //自定义去色算法
+    //自定义去色算法 ( 盛行的 0.299-0.587-0.114去色算法 )
     private Bitmap desaturate(Bitmap bitmapOrigin){
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
@@ -156,7 +159,7 @@ public class BrowseImageActivity extends BaseActivity {
                 int r = (color & 0x00ff0000) >> 16;     //R值
                 int g = (color & 0x0000ff00) >> 8;      //G值
                 int b = (color & 0x000000ff);           //B值
-                int grey = (int) (r * 0.299 + g * 0.587 + b * 0.114);   //盛行的 0.299-0.587-0.114去色算法
+                int grey = (int) (r * 0.299 + g * 0.587 + b * 0.114);
                 pixels[index] = grey << 16 | grey << 8 | grey | 0xff000000;
             }
         }
@@ -166,4 +169,25 @@ public class BrowseImageActivity extends BaseActivity {
     }
 
 
+    //反相
+    public Bitmap reverseColor(Bitmap bitmapOrigin){
+        int picHeight = bitmapOrigin.getHeight();
+        int picWidth = bitmapOrigin.getWidth();
+
+        int[] pixels = new int[picWidth * picHeight];
+        bitmapOrigin.getPixels(pixels, 0, picWidth, 0, 0, picWidth, picHeight);
+        for (int i = 0; i < picHeight; ++i) {
+            for (int j = 0; j < picWidth; ++j) {
+                int index = i * picWidth + j;
+                int color = pixels[index];
+                int r = 255 - (color & 0x00ff0000) >> 16;     //R值与255的差值
+                int g = 255 - (color & 0x0000ff00) >> 8;      //G值与255的差值
+                int b = 255 - (color & 0x000000ff);           //B值与255的差值
+                pixels[index] = r << 16 | g << 8 | b | 0xff000000;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(pixels, picWidth, picHeight,
+                Bitmap.Config.ARGB_8888);
+        return bitmap;
+    }
 }
