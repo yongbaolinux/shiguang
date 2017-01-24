@@ -144,6 +144,7 @@ public class BrowseImageActivity extends BaseActivity {
         }).start();
     }
 
+
     //自定义去色算法 ( 盛行的 0.299-0.587-0.114去色算法 )
     private Bitmap desaturate(Bitmap bitmapOrigin){
         int picHeight = bitmapOrigin.getHeight();
@@ -167,7 +168,6 @@ public class BrowseImageActivity extends BaseActivity {
                 Bitmap.Config.ARGB_8888);
         return bitmap;
     }
-
 
     //反相
     public Bitmap reverseColor(Bitmap bitmapOrigin){
