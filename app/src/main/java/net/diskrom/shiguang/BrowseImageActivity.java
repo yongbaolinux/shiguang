@@ -206,7 +206,8 @@ public class BrowseImageActivity extends BaseActivity {
     //高斯模糊
     private Bitmap gaussianBlur(Bitmap bitmapOrigin){
         final int RADIUS = 1;     //定义滤波矩阵半径
-        final int[] filterMatrix = new int[]{2,0,0,0,-1,0,0,0,-1};
+        //final double[] filterMatrix = new double[]{0.0947416,0.118318,0.0947416,0.118318,0.147761,0.118318,0.0947416,0.118318,0.0947416};
+        final int[] filterMatrix = new int[]{1,1,1,1,1,1,1,1,1};
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
         int[] pixels = new int[picWidth * picHeight];
@@ -215,20 +216,124 @@ public class BrowseImageActivity extends BaseActivity {
         //只计算离图像边缘大于等于滤波矩阵半径的像素点
         for(int y = RADIUS;y < picHeight-RADIUS; y++){
             for(int x = RADIUS;x < picWidth-RADIUS; x++){
-                int filterMatrixIndex = 0;      //在滤波矩阵中的索引
-                int sum = 0;                    //存放滤波积和
+                int filterMatrixIndex = 0;       //在滤波矩阵中的索引
+                int sumR = 0;                    //存放R通道滤波积和
+                int sumG = 0;                    //存放G通道滤波积和
+                int sumB = 0;                    //存放B通道滤波积和
                 for(int tempY = y-RADIUS; tempY <= y + RADIUS; tempY++){
                     for(int tempX = x - RADIUS; tempX <= x + RADIUS; tempX++){
-                        sum += pixels[tempY*picWidth + tempX]*filterMatrix[filterMatrixIndex];
-                        filterMatrixIndex++;
+                        //sum += pixels[tempY * picWidth + tempX] * filterMatrix[filterMatrixIndex];
+                        //filterMatrixIndex++;
+                        int color = pixels[tempY * picWidth + tempX];
+                        sumR += ((color & 0x00ff0000) >> 16) * filterMatrix[filterMatrixIndex];
+                        sumG += ((color & 0x0000ff00) >> 8) * filterMatrix[filterMatrixIndex];
+                        sumB += (color & 0x0000ff00) * filterMatrix[filterMatrixIndex];
                     }
                 }
-                pixelsRes[y*picWidth + x] = sum;
+
+                int r = sumR / (int)Math.pow(2*RADIUS+1,2);         //R滤波通道均值
+                int g = sumG / (int)Math.pow(2*RADIUS+1,2);         //G滤波通道均值
+                int b = sumB / (int)Math.pow(2*RADIUS+1,2);         //B滤波通道均值
+                pixelsRes[y*picWidth + x] = r << 16 | g << 8 | b | 0xff000000;
+                //LogUtils.v(pixelsRes[y*picWidth + x]);
+                //break;
             }
+           // break;
         }
-        //LogUtils.v(pixelsRes[3000]);
+
         Bitmap bitmap = Bitmap.createBitmap(pixelsRes, picWidth, picHeight,
                 Bitmap.Config.ARGB_8888);
         return bitmap;
     }
+
+    //高斯模糊2
+    private Bitmap gaussianBlur_(Bitmap bitmapOrigin){
+        int radius = 2;
+        float sigma = 1.5f;
+        int width = bitmapOrigin.getWidth();
+        int height = bitmapOrigin.getHeight();
+        int[] data = new int[width * height];
+        bitmapOrigin.getPixels(data, 0, width, 0, 0, width, height);
+
+        float pa = (float) (1 / (Math.sqrt(2 * Math.PI) * sigma));
+        float pb = -1.0f / (2 * sigma * sigma);
+
+        // generate the Gauss Matrix
+        float[] gaussMatrix = new float[radius * 2 + 1];
+        float gaussSum = 0f;
+        for (int i = 0, x = -radius; x <= radius; ++x, ++i) {
+            float g = (float) (pa * Math.exp(pb * x * x));
+            gaussMatrix[i] = g;
+            gaussSum += g;
+        }
+
+        for (int i = 0, length = gaussMatrix.length; i < length; ++i) {
+            gaussMatrix[i] /= gaussSum;
+        }
+
+        // x direction
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                float r = 0, g = 0, b = 0;
+                gaussSum = 0;
+                for (int j = -radius; j <= radius; ++j) {
+                    int k = x + j;
+                    if (k >= 0 && k < width) {
+                        int index = y * width + k;
+                        int color = data[index];
+                        int cr = (color & 0x00ff0000) >> 16;
+                        int cg = (color & 0x0000ff00) >> 8;
+                        int cb = (color & 0x000000ff);
+
+                        r += cr * gaussMatrix[j + radius];
+                        g += cg * gaussMatrix[j + radius];
+                        b += cb * gaussMatrix[j + radius];
+
+                        gaussSum += gaussMatrix[j + radius];
+                    }
+                }
+
+                int index = y * width + x;
+                int cr = (int) (r / gaussSum);
+                int cg = (int) (g / gaussSum);
+                int cb = (int) (b / gaussSum);
+
+                data[index] = cr << 16 | cg << 8 | cb | 0xff000000;
+            }
+        }
+
+        // y direction
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                float r = 0, g = 0, b = 0;
+                gaussSum = 0;
+                for (int j = -radius; j <= radius; ++j) {
+                    int k = y + j;
+                    if (k >= 0 && k < height) {
+                        int index = k * width + x;
+                        int color = data[index];
+                        int cr = (color & 0x00ff0000) >> 16;
+                        int cg = (color & 0x0000ff00) >> 8;
+                        int cb = (color & 0x000000ff);
+
+                        r += cr * gaussMatrix[j + radius];
+                        g += cg * gaussMatrix[j + radius];
+                        b += cb * gaussMatrix[j + radius];
+
+                        gaussSum += gaussMatrix[j + radius];
+                    }
+                }
+
+                int index = y * width + x;
+                int cr = (int) (r / gaussSum);
+                int cg = (int) (g / gaussSum);
+                int cb = (int) (b / gaussSum);
+                data[index] = cr << 16 | cg << 8 | cb | 0xff000000;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(data, width, height,
+                Bitmap.Config.ARGB_8888);
+        return bitmap;
+    }
+
 }
