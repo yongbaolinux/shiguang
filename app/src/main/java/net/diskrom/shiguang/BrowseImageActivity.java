@@ -191,15 +191,15 @@ public class BrowseImageActivity extends BaseActivity {
     //高斯模糊
     private Bitmap gaussianBlur(Bitmap bitmapOrigin){
         final int RADIUS = 1;     //定义滤波矩阵半径
-        final double[] filterMatrix = new double[]{
+        /*final double[] filterMatrix = new double[]{
                 0.0947416,0.118318,0.0947416,
                 0.118318,0.147761,0.118318,
-                0.0947416,0.118318,0.0947416};
+                0.0947416,0.118318,0.0947416};*/
         //final int[] filterMatrix = new int[]{1,1,1,1,-7,1,1,1,1};
-        /*final double[] filterMatrix = new double[]{
-                0,0.2,0,
-                0.2,0.2,0.2,
-                0,0.2,0};*/
+        final double[] filterMatrix = new double[]{
+                0.1111111,0.1111111,0.1111111,
+                0.1111111,0.1111111,0.1111111,
+                0.1111111,0.1111111,0.1111111};
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
         int[] pixels = new int[picWidth * picHeight];
