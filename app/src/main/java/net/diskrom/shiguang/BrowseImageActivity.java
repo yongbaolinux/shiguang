@@ -63,8 +63,8 @@ public class BrowseImageActivity extends BaseActivity {
         //Bitmap bitmap = MainActivity.imagesBitmapMap.get(path);
         //Bitmap bitmap = myApplication.getImageFromMemoryCache(path);
         //browseImage.setImageBitmap(bitmap);
-        loadSrcImage(path);
-        /*Glide.with(BrowseImageActivity.this).load(path).into(new GlideDrawableImageViewTarget(browseImage) {
+        //loadSrcImage(path);
+        Glide.with(BrowseImageActivity.this).load(path).into(new GlideDrawableImageViewTarget(browseImage) {
             @Override
             public void onResourceReady(final GlideDrawable drawable, GlideAnimation anim) {
                 super.onResourceReady(drawable, anim);
@@ -123,7 +123,7 @@ public class BrowseImageActivity extends BaseActivity {
                     }
                 });
             }
-        });*/
+        });
 
         /*Glide.with(BrowseImageActivity.this).load(path).asBitmap().into(new SimpleTarget<Bitmap>() {
             @Override
@@ -140,72 +140,7 @@ public class BrowseImageActivity extends BaseActivity {
         desaturate2 = (LinearLayout) findViewById(R.id.desaturate2);
         sketch = (LinearLayout) findViewById(R.id.sketch);
         gaussian = (LinearLayout) findViewById(R.id.gaussian);
-
-        desaturate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                int height = srcImageBitmap.getHeight();
-                int width = srcImageBitmap.getWidth();
-                //定义灰度图像
-                Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-                Canvas canvas = new Canvas(bmpGrayscale);
-                Paint paint = new Paint();
-                ColorMatrix cm = new ColorMatrix();
-                cm.setSaturation(0);
-                ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
-                paint.setColorFilter(f);
-                canvas.drawBitmap(srcImageBitmap, 0, 0, paint);
-                browseImage.setImageBitmap(bmpGrayscale);
-            }
-        });
-
-        //自定义算法去色
-        desaturate2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Bitmap bitmap = desaturate(srcImageBitmap);
-                browseImage.setImageBitmap(bitmap);
-            }
-        });
-
-        //素描
-        sketch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Bitmap bitmap = desaturate(srcImageBitmap);   //去色
-                Bitmap bitmap2 = reverseColor(bitmap);      //反相
-                browseImage.setImageBitmap(bitmap2);
-            }
-        });
-
-        //高斯模糊
-        gaussian.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Bitmap bitmap = gaussianBlur(srcImageBitmap);
-                //browseImage.setImageBitmap(bitmap);
-
-                Bitmap bitmap = testGetPixels(srcImageBitmap);
-                browseImage.setImageBitmap(bitmap);
-            }
-        });
     }
-
-    //开启新的线程加载原图
-    private void loadSrcImage(final String srcImagePath){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //加载原图
-                srcImageBitmap = BitmapFactory.decodeFile(srcImagePath);
-                Message msg = new Message();
-                msg.what = LOAD_SOURCE_IMAGE_FINISHED;
-                handler.sendMessage(msg);
-            }
-        }).start();
-    }
-
 
     //自定义去色算法 ( 盛行的 0.299-0.587-0.114去色算法 )
     private Bitmap desaturate(Bitmap bitmapOrigin){
@@ -256,13 +191,20 @@ public class BrowseImageActivity extends BaseActivity {
     //高斯模糊
     private Bitmap gaussianBlur(Bitmap bitmapOrigin){
         final int RADIUS = 1;     //定义滤波矩阵半径
-        //final double[] filterMatrix = new double[]{0.0947416,0.118318,0.0947416,0.118318,0.147761,0.118318,0.0947416,0.118318,0.0947416};
-        final int[] filterMatrix = new int[]{1,1,1,1,1,1,1,1,1};
+        final double[] filterMatrix = new double[]{
+                0.0947416,0.118318,0.0947416,
+                0.118318,0.147761,0.118318,
+                0.0947416,0.118318,0.0947416};
+        //final int[] filterMatrix = new int[]{1,1,1,1,-7,1,1,1,1};
+        /*final double[] filterMatrix = new double[]{
+                0,0.2,0,
+                0.2,0.2,0.2,
+                0,0.2,0};*/
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
         int[] pixels = new int[picWidth * picHeight];
+        int[] pixelsRes = new int[picWidth * picHeight];
         bitmapOrigin.getPixels(pixels, 0, picWidth, 0, 0, picWidth, picHeight);
-        int[] pixelsRes = pixels;
 
         //只计算离图像边缘大于等于滤波矩阵半径的像素点
         for(int y = RADIUS;y < picHeight-RADIUS; y++){
@@ -277,22 +219,27 @@ public class BrowseImageActivity extends BaseActivity {
                         //sum += pixels[tempY * picWidth + tempX] * filterMatrix[filterMatrixIndex];
                         //filterMatrixIndex++;
                         int color = pixels[tempY * picWidth + tempX];
-                        if(x == 100 && y==100){
+                        /*if(x ==100 && y ==100){
                             LogUtils.v(Integer.toHexString(color));
-                        }
+                        }*/
                         sumR += ((color & 0x00ff0000) >> 16) * filterMatrix[filterMatrixIndex];
                         sumG += ((color & 0x0000ff00) >> 8) * filterMatrix[filterMatrixIndex];
-                        sumB += (color & 0x0000ff00) * filterMatrix[filterMatrixIndex];
+                        sumB += (color & 0x000000ff) * filterMatrix[filterMatrixIndex];
+                        filterMatrixIndex++;
                     }
                 }
 
-                int r = sumR / (int)Math.pow(2*RADIUS+1,2);         //R滤波通道均值
+                /*int r = sumR / (int)Math.pow(2*RADIUS+1,2);         //R滤波通道均值
                 int g = sumG / (int)Math.pow(2*RADIUS+1,2);         //G滤波通道均值
-                int b = sumB / (int)Math.pow(2*RADIUS+1,2);         //B滤波通道均值
+                int b = sumB / (int)Math.pow(2*RADIUS+1,2);         //B滤波通道均值*/
+                int r = (sumR > 255) ? 255 : sumR;
+                int g = (sumG > 255) ? 255 : sumG;
+                int b = (sumB > 255) ? 255 : sumB;
+
                 pixelsRes[y*picWidth + x] = r << 16 | g << 8 | b | 0xff000000;
-                if(x == 100 && y==100){
-                    LogUtils.v(Integer.toHexString(r << 16 | g << 8 | b | 0xff000000));
-                }
+                /*if(x ==100 && y ==100){
+                    LogUtils.v(Integer.toHexString(b));
+                }*/
                 //LogUtils.v(pixelsRes[y*picWidth + x]);
                 //break;
             }
@@ -394,15 +341,18 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
-    //测试getpixels
-    private Bitmap testGetPixels(Bitmap bitmapOrigin){
-        int picHeight = bitmapOrigin.getHeight();
-        int picWidth = bitmapOrigin.getWidth();
-        int[] pixels = new int[picWidth * picHeight];
-        bitmapOrigin.getPixels(pixels, 0, picWidth, 0, 0, picWidth, picHeight);
-        Bitmap bitmap = Bitmap.createBitmap(pixels, picWidth, picHeight,
-                Bitmap.Config.ARGB_8888);
-        return bitmap;
-    }
 
+    //开启新的线程加载原图
+    private void loadSrcImage(final String srcImagePath){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //加载原图
+                srcImageBitmap = BitmapFactory.decodeFile(srcImagePath);
+                Message msg = new Message();
+                msg.what = LOAD_SOURCE_IMAGE_FINISHED;
+                handler.sendMessage(msg);
+            }
+        }).start();
+    }
 }
