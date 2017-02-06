@@ -119,7 +119,7 @@ public class BrowseImageActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
-                        Bitmap bitmap = gaussianBlur3(bitmapOrigin,50,true);
+                        Bitmap bitmap = gaussianBlur3(bitmapOrigin,50,false);
                         browseImage.setImageBitmap(bitmap);
                     }
                 });
@@ -189,7 +189,10 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
-    //高斯模糊
+    /**
+     * 效果欠佳
+     * 高斯模糊
+     */
     private Bitmap gaussianBlur(Bitmap bitmapOrigin){
         final int RADIUS = 1;     //定义滤波矩阵半径
         /*final double[] filterMatrix = new double[]{
@@ -252,7 +255,11 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
-    //高斯模糊2
+    /**
+     * 效果欠佳
+     * 高斯模糊2
+     */
+
     private Bitmap gaussianBlur2(Bitmap bitmapOrigin){
         int radius = 2;
         float sigma = 1.5f;
@@ -343,6 +350,7 @@ public class BrowseImageActivity extends BaseActivity {
     }
 
     /**
+     * 效果最佳
      * 高斯模糊滤镜3
      * @param sentBitmap        需要处理的Bitmap对象
      * @param radius            高斯模糊半径
@@ -554,6 +562,54 @@ public class BrowseImageActivity extends BaseActivity {
         bitmap.setPixels(pix, 0, w, 0, 0, w, h);
 
         return (bitmap);
+    }
+
+    /**
+     * 效果欠佳
+     * @param bitmapOrigin
+     * @return
+     */
+    private Bitmap gaussianBlur4(Bitmap bitmapOrigin){
+        int picHeight = bitmapOrigin.getHeight();
+        int picWidth = bitmapOrigin.getWidth();
+
+        int[] pixels = new int[picWidth * picHeight];
+        bitmapOrigin.getPixels(pixels, 0, picWidth, 0, 0, picWidth, picHeight);
+
+        int[] guassBlur = new int[pixels.length];
+
+        for (int i = 0; i < picWidth; i++)
+        {
+            for (int j = 0; j < picHeight; j++)
+            {
+                int temp = picWidth * (j) + (i);
+                if ((i == 0) || (i == picWidth - 1) || (j == 0) || (j == picHeight - 1))
+                {
+                    guassBlur[temp] = 0;
+                }
+                else
+                {
+                    int i0 = picWidth * (j - 1) + (i - 1);
+                    int i1 = picWidth * (j - 1) + (i);
+                    int i2 = picWidth * (j - 1) + (i + 1);
+                    int i3 = picWidth * (j) + (i - 1);
+                    int i4 = picWidth * (j) + (i);
+                    int i5 = picWidth * (j) + (i + 1);
+                    int i6 = picWidth * (j + 1) + (i - 1);
+                    int i7 = picWidth * (j + 1) + (i);
+                    int i8 = picWidth * (j + 1) + (i + 1);
+
+                    int sum = pixels[i0] + 2 * pixels[i1] + pixels[i2] + 2 * pixels[i3] + 4 * pixels[i4] + 2 * pixels[i5] + pixels[i6] + 2 * pixels[i7] + pixels[i8];
+
+                    sum /= 16;
+
+                    guassBlur[temp] = sum;
+                }
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(guassBlur, picWidth, picHeight,
+                Bitmap.Config.ARGB_8888);
+        return bitmap;
     }
 
     //开启新的线程加载原图
