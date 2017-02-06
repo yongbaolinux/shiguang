@@ -109,7 +109,8 @@ public class BrowseImageActivity extends BaseActivity {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
                         Bitmap bitmap = desaturate(bitmapOrigin);   //去色
                         Bitmap bitmap2 = reverseColor(bitmap);      //反相
-                        browseImage.setImageBitmap(bitmap2);
+                        Bitmap bitmap3 = gaussianBlur2(bitmap2);    //高斯模糊
+                        browseImage.setImageBitmap(bitmap3);
                     }
                 });
 
@@ -118,7 +119,7 @@ public class BrowseImageActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
-                        Bitmap bitmap = doBlur(bitmapOrigin,50,true);
+                        Bitmap bitmap = gaussianBlur3(bitmapOrigin,50,true);
                         browseImage.setImageBitmap(bitmap);
                     }
                 });
@@ -252,7 +253,7 @@ public class BrowseImageActivity extends BaseActivity {
     }
 
     //高斯模糊2
-    private Bitmap gaussianBlur_(Bitmap bitmapOrigin){
+    private Bitmap gaussianBlur2(Bitmap bitmapOrigin){
         int radius = 2;
         float sigma = 1.5f;
         int width = bitmapOrigin.getWidth();
@@ -348,7 +349,7 @@ public class BrowseImageActivity extends BaseActivity {
      * @param canReuseInBitmap  处理结果应用到Bitmap本身
      * @return
      */
-    private Bitmap doBlur(Bitmap sentBitmap, int radius, boolean canReuseInBitmap) {
+    private Bitmap gaussianBlur3(Bitmap sentBitmap, int radius, boolean canReuseInBitmap) {
 
         Bitmap bitmap;
         if (canReuseInBitmap) {
