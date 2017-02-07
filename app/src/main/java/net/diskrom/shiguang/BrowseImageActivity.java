@@ -10,11 +10,17 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Message;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.apkfuns.logutils.LogUtils;
@@ -35,6 +41,8 @@ public class BrowseImageActivity extends BaseActivity {
     private Bitmap srcImageBitmap;  //维护一个存储原图Bitmap的变量
     private static final int LOAD_SOURCE_IMAGE_FINISHED = 1;  //消息类型 原图加载完成
     private ImageView browseImage;
+    private Button saveImage;
+
     private LinearLayout desaturate;            //去色
     private LinearLayout desaturate2;           //自定义算法去色
     private LinearLayout sketch;                //素描
@@ -113,8 +121,8 @@ public class BrowseImageActivity extends BaseActivity {
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
                         Bitmap bitmap = desaturate(bitmapOrigin);   //去色
-                        Bitmap bitmap2 = reverseColor(bitmap);      //反相
-                        Bitmap bitmap3 = gaussianBlur2(bitmap2);    //高斯模糊
+                        //Bitmap bitmap2 = reverseColor(bitmap);      //反相
+                        Bitmap bitmap3 = gaussianBlur3(bitmap,50,false);    //高斯模糊
 
                         browseImage.setImageBitmap(bitmap3);
                     }
@@ -125,10 +133,22 @@ public class BrowseImageActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
-                        Bitmap bitmap = createBitmap();
-                        //Bitmap bitmap2 = gaussianBlur3(bitmap,80,false);
+                        //Bitmap bitmap = createBitmap();
+                        Bitmap bitmap2 = gaussianBlur5(bitmapOrigin);
 
-                        browseImage.setImageBitmap(bitmap);
+                        browseImage.setImageBitmap(bitmap2);
+                    }
+                });
+
+                //保存Bitmap
+                saveImage.setOnClickListener(new View.OnClickListener(){
+                    public void onClick(View v){
+                        Bitmap bitmapOrigin = ((BitmapDrawable)browseImage.getDrawable()).getBitmap();
+                        try {
+                            saveBitmap(bitmapOrigin, "123.png");
+                        } catch (IOException e){
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -144,11 +164,14 @@ public class BrowseImageActivity extends BaseActivity {
     }
 
     private void init(){
-        browseImage = (ImageView) findViewById(R.id.browseImage);
+        browseImage = (ImageView) findViewById(R.id.browseImage);   //用于展示图片的imageview控件
+        saveImage = (Button) findViewById(R.id.save);
+
         desaturate = (LinearLayout) findViewById(R.id.desaturate);
         desaturate2 = (LinearLayout) findViewById(R.id.desaturate2);
         sketch = (LinearLayout) findViewById(R.id.sketch);
         gaussian = (LinearLayout) findViewById(R.id.gaussian);
+
     }
 
     //自定义去色算法 ( 盛行的 0.299-0.587-0.114去色算法 )
@@ -267,7 +290,6 @@ public class BrowseImageActivity extends BaseActivity {
      * 效果欠佳
      * 高斯模糊2
      */
-
     private Bitmap gaussianBlur2(Bitmap bitmapOrigin){
         int radius = 2;
         float sigma = 1.5f;
@@ -620,6 +642,44 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
+    /**
+     * 高斯模糊 利用 RenderScript
+     * @return
+     */
+    private Bitmap gaussianBlur5(Bitmap bitmap){
+        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                Bitmap.Config.ARGB_8888);
+
+        // Instantiate a new Renderscript
+        RenderScript rs = RenderScript.create(getApplicationContext());//RenderScript是Android在API 11之后加入的
+
+        // Create an Intrinsic Blur Script using the Renderscript
+        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+
+        // Create the Allocations (in/out) with the Renderscript and the in/out
+        // bitmaps
+        Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
+        Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
+
+        // Set the radius of the blur
+        blurScript.setRadius(25.f);
+
+        // Perform the Renderscript
+        blurScript.setInput(allIn);
+        blurScript.forEach(allOut);
+
+        // Copy the final bitmap created by the out Allocation to the outBitmap
+        allOut.copyTo(outBitmap);
+
+        // recycle the original bitmap
+        bitmap.recycle();
+
+        // After finishing everything, we destroy the Renderscript.
+        rs.destroy();
+
+        return outBitmap;
+    }
+
     //构造渐变图
     private Bitmap createBitmap(){
         int[] pixels = new int[256*256];
@@ -637,8 +697,10 @@ public class BrowseImageActivity extends BaseActivity {
     private void saveBitmap(Bitmap bitmap,String bitName) throws IOException
     {
         File file = new File("/sdcard/DCIM/Camera/"+bitName);
+
         if(file.exists()){
-            file.delete();
+            //file.delete();
+            LogUtils.v("exist");
         }
         FileOutputStream out;
         try{
