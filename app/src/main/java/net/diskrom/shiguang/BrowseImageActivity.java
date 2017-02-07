@@ -121,9 +121,9 @@ public class BrowseImageActivity extends BaseActivity {
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
                         Bitmap bitmap = desaturate(bitmapOrigin);   //去色
-                        //Bitmap bitmap2 = reverseColor(bitmap);      //反相
-                        Bitmap bitmap3 = gaussianBlur3(bitmap,50,false);    //高斯模糊
-
+                        Bitmap bitmap2 = reverseColor(bitmap);      //反相
+                        Bitmap bitmap3 = gaussianBlur3(bitmap2,50,false);    //高斯模糊
+                        //mixColor(bitmap3,bitmap);
                         browseImage.setImageBitmap(bitmap3);
                     }
                 });
@@ -680,6 +680,34 @@ public class BrowseImageActivity extends BaseActivity {
         return outBitmap;
     }
 
+    //叠加两个像素通道 第一个参数为基础 r、g或b任一通道数值  第二个参数为等待混合的 r、g或b任一通道数值 返回混合后的通道数值
+    private int mixChannel(int baseChannel,int mixChannel){
+        int mixedChannel = baseChannel + (baseChannel * mixChannel) / (255 - mixChannel);
+        mixedChannel = mixedChannel > 255 ? 255 : mixedChannel;
+        return mixedChannel;
+    }
+
+    //叠加两个颜色值数组
+    private void mixColor(int[] baseColor,int[] mixColor){
+        for (int i = 0, length = baseColor.length; i < length; ++i) {
+            int bColor = baseColor[i];
+            int br = (bColor & 0x00ff0000) >> 16;
+            int bg = (bColor & 0x0000ff00) >> 8;
+            int bb = (bColor & 0x000000ff);
+
+            int mColor = mixColor[i];
+            int mr = (mColor & 0x00ff0000) >> 16;
+            int mg = (mColor & 0x0000ff00) >> 8;
+            int mb = (mColor & 0x000000ff);
+
+            int nr = mixChannel(br, mr);
+            int ng = mixChannel(bg, mg);
+            int nb = mixChannel(bb, mb);
+
+            baseColor[i] = nr << 16 | ng << 8 | nb | 0xff000000;
+        }
+    }
+
     //构造渐变图
     private Bitmap createBitmap(){
         int[] pixels = new int[256*256];
@@ -694,6 +722,7 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
+    //将bitmap保存为图片
     private void saveBitmap(Bitmap bitmap,String bitName) throws IOException
     {
         File file = new File("/sdcard/DCIM/Camera/"+bitName);
