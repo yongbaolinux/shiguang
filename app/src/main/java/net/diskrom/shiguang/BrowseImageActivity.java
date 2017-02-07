@@ -119,7 +119,7 @@ public class BrowseImageActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
-                        Bitmap bitmap = gaussianBlur3(bitmapOrigin,50,false);
+                        Bitmap bitmap = gaussianBlur(bitmapOrigin);
                         browseImage.setImageBitmap(bitmap);
                     }
                 });
@@ -194,16 +194,23 @@ public class BrowseImageActivity extends BaseActivity {
      * 高斯模糊
      */
     private Bitmap gaussianBlur(Bitmap bitmapOrigin){
-        final int RADIUS = 1;     //定义滤波矩阵半径
+        final int RADIUS = 2;     //定义滤波矩阵半径
         /*final double[] filterMatrix = new double[]{
                 0.0947416,0.118318,0.0947416,
                 0.118318,0.147761,0.118318,
                 0.0947416,0.118318,0.0947416};*/
         //final int[] filterMatrix = new int[]{1,1,1,1,-7,1,1,1,1};
+        /*final double[] filterMatrix = new double[]{
+                0.1111111,0.1111111,0.1111111,
+                0.1111111,0.1111111,0.1111111,
+                0.1111111,0.1111111,0.1111111};*/
         final double[] filterMatrix = new double[]{
-                0.1111111,0.1111111,0.1111111,
-                0.1111111,0.1111111,0.1111111,
-                0.1111111,0.1111111,0.1111111};
+                0.003663,0.014652,0.025641,0.014652,0.003663,
+                0.014652,0.058608,0.095238,0.058608,0.014652,
+                0.025641,0.095238,0.150183,0.095238,0.025641,
+                0.014652,0.058608,0.095238,0.058608,0.014652,
+                0.003663,0.014652,0.025641,0.014652,0.003663};
+
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
         int[] pixels = new int[picWidth * picHeight];
@@ -240,7 +247,7 @@ public class BrowseImageActivity extends BaseActivity {
                 int g = (sumG > 255) ? 255 : sumG;
                 int b = (sumB > 255) ? 255 : sumB;
 
-                pixelsRes[y*picWidth + x] = r << 16 | g << 8 | b | 0xff000000;
+                pixelsRes[y*picWidth + x] = sumR << 16 | sumG << 8 | sumB | 0xff000000;
                 /*if(x ==100 && y ==100){
                     LogUtils.v(Integer.toHexString(b));
                 }*/
@@ -351,17 +358,17 @@ public class BrowseImageActivity extends BaseActivity {
 
     /**
      * 效果最佳
-     * 高斯模糊滤镜3
+     * 高斯模糊滤镜3 (StackBlur模糊算法)
      * @param sentBitmap        需要处理的Bitmap对象
      * @param radius            高斯模糊半径
-     * @param canReuseInBitmap  处理结果应用到Bitmap本身
+     * @param canReuseInBitmap  处理结果应用到Bitmap本身 1 应用到本身 0 不应用到本身
      * @return
      */
     private Bitmap gaussianBlur3(Bitmap sentBitmap, int radius, boolean canReuseInBitmap) {
 
         Bitmap bitmap;
         if (canReuseInBitmap) {
-            bitmap = sentBitmap;
+            bitmap = sentBitmap;        //传递指针
         } else {
             bitmap = sentBitmap.copy(sentBitmap.getConfig(), true);
         }
