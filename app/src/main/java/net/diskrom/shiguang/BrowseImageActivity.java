@@ -10,11 +10,17 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Message;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.apkfuns.logutils.LogUtils;
@@ -25,11 +31,18 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 
 public class BrowseImageActivity extends BaseActivity {
     private Bitmap srcImageBitmap;  //维护一个存储原图Bitmap的变量
     private static final int LOAD_SOURCE_IMAGE_FINISHED = 1;  //消息类型 原图加载完成
     private ImageView browseImage;
+    private Button saveImage;
+
     private LinearLayout desaturate;            //去色
     private LinearLayout desaturate2;           //自定义算法去色
     private LinearLayout sketch;                //素描
@@ -97,7 +110,11 @@ public class BrowseImageActivity extends BaseActivity {
                     public void onClick(View v) {
                         //直接从ImageView控件中获取bitmap
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
-                        Bitmap bitmap = desaturate(bitmapOrigin);
+                        //Bitmap bitmap = desaturate(bitmapOrigin);
+                        int[] pixels = getPixelsFromBitmap(bitmapOrigin);   //从源图像获取像素值
+                        desaturate_(pixels);
+                        Bitmap bitmap = Bitmap.createBitmap(pixels, bitmapOrigin.getWidth(), bitmapOrigin.getHeight(),
+                                Bitmap.Config.ARGB_8888);
                         browseImage.setImageBitmap(bitmap);
                     }
                 });
@@ -109,7 +126,8 @@ public class BrowseImageActivity extends BaseActivity {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
                         Bitmap bitmap = desaturate(bitmapOrigin);   //去色
                         Bitmap bitmap2 = reverseColor(bitmap);      //反相
-                        Bitmap bitmap3 = gaussianBlur2(bitmap2);    //高斯模糊
+                        Bitmap bitmap3 = gaussianBlur3(bitmap2,50,false);    //高斯模糊
+                        //mixColor(bitmap3,bitmap);
                         browseImage.setImageBitmap(bitmap3);
                     }
                 });
@@ -119,8 +137,21 @@ public class BrowseImageActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
-                        Bitmap bitmap = gaussianBlur(bitmapOrigin);
-                        browseImage.setImageBitmap(bitmap);
+                        //Bitmap bitmap = createBitmap();
+                        Bitmap bitmap2 = gaussianBlur5(bitmapOrigin);
+                        browseImage.setImageBitmap(bitmap2);
+                    }
+                });
+
+                //保存Bitmap
+                saveImage.setOnClickListener(new View.OnClickListener(){
+                    public void onClick(View v){
+                        Bitmap bitmapOrigin = ((BitmapDrawable)browseImage.getDrawable()).getBitmap();
+                        try {
+                            saveBitmap(bitmapOrigin, "123.png");
+                        } catch (IOException e){
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -136,14 +167,35 @@ public class BrowseImageActivity extends BaseActivity {
     }
 
     private void init(){
-        browseImage = (ImageView) findViewById(R.id.browseImage);
+        browseImage = (ImageView) findViewById(R.id.browseImage);   //用于展示图片的imageview控件
+        saveImage = (Button) findViewById(R.id.save);
+
         desaturate = (LinearLayout) findViewById(R.id.desaturate);
         desaturate2 = (LinearLayout) findViewById(R.id.desaturate2);
         sketch = (LinearLayout) findViewById(R.id.sketch);
         gaussian = (LinearLayout) findViewById(R.id.gaussian);
+
     }
 
-    //自定义去色算法 ( 盛行的 0.299-0.587-0.114去色算法 )
+    /**
+     * 从图像Bitmap 获取像素值数组
+     * bitmapOrigin 源图像
+     * @return pixels 返回的像素值数组
+     */
+    private int[] getPixelsFromBitmap(Bitmap bitmapOrigin){
+        int picHeight = bitmapOrigin.getHeight();
+        int picWidth = bitmapOrigin.getWidth();
+
+        int[] pixels = new int[picWidth * picHeight];
+        bitmapOrigin.getPixels(pixels, 0, picWidth, 0, 0, picWidth, picHeight);
+        return pixels;
+    }
+
+    /**
+     * 自定义去色算法 ( 盛行的 0.299-0.587-0.114去色算法 返回Bitmap)
+     * bitmapOrigin Bitmap 源图像
+     * @return 处理过的bitmap
+     */
     private Bitmap desaturate(Bitmap bitmapOrigin){
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
@@ -167,8 +219,32 @@ public class BrowseImageActivity extends BaseActivity {
         return bitmap;
     }
 
-    //反相
-    public Bitmap reverseColor(Bitmap bitmapOrigin){
+    /**
+     * 自定义去色算法2 返回 像素值数组
+     * pixels int[] 像素数组
+     * @return int[] 处理后的像素值数组
+     */
+
+    private int[] desaturate_(int[] pixels){
+        for (int i = 0; i < pixels.length; ++i) {
+            int color = pixels[i];
+            int r = (color & 0x00ff0000) >> 16;     //R值
+            int g = (color & 0x0000ff00) >> 8;      //G值
+            int b = (color & 0x000000ff);           //B值
+            int grey = (int) (r * 0.299 + g * 0.587 + b * 0.114);
+            pixels[i] = grey << 16 | grey << 8 | grey | 0xff000000;
+        }
+        return pixels;
+    }
+
+
+    /**
+     *  反相
+     *  bitmapOrigin 源图像
+     *  返回 bitmap
+     */
+
+    private Bitmap reverseColor(Bitmap bitmapOrigin){
         int picHeight = bitmapOrigin.getHeight();
         int picWidth = bitmapOrigin.getWidth();
 
@@ -187,6 +263,22 @@ public class BrowseImageActivity extends BaseActivity {
         Bitmap bitmap = Bitmap.createBitmap(pixels, picWidth, picHeight,
                 Bitmap.Config.ARGB_8888);
         return bitmap;
+    }
+
+    /**
+     * 反相2
+     * int[] pixels 像素值数组
+     * @return 经过处理的像素数组
+     */
+    private int[] reverseColor_(int[] pixels){
+        for (int i = 0; i < pixels.length; ++i) {
+            int color = pixels[i];
+            int r = 255 - (color & 0x00ff0000) >> 16;     //R值与255的差值
+            int g = 255 - (color & 0x0000ff00) >> 8;      //G值与255的差值
+            int b = 255 - (color & 0x000000ff);           //B值与255的差值
+            pixels[i] = r << 16 | g << 8 | b | 0xff000000;
+        }
+        return pixels;
     }
 
     /**
@@ -266,7 +358,6 @@ public class BrowseImageActivity extends BaseActivity {
      * 效果欠佳
      * 高斯模糊2
      */
-
     private Bitmap gaussianBlur2(Bitmap bitmapOrigin){
         int radius = 2;
         float sigma = 1.5f;
@@ -358,7 +449,7 @@ public class BrowseImageActivity extends BaseActivity {
 
     /**
      * 效果最佳
-     * 高斯模糊滤镜3 (StackBlur模糊算法)
+     * 高斯模糊滤镜3 (stackblur 堆栈模糊算法)
      * @param sentBitmap        需要处理的Bitmap对象
      * @param radius            高斯模糊半径
      * @param canReuseInBitmap  处理结果应用到Bitmap本身 1 应用到本身 0 不应用到本身
@@ -617,6 +708,114 @@ public class BrowseImageActivity extends BaseActivity {
         Bitmap bitmap = Bitmap.createBitmap(guassBlur, picWidth, picHeight,
                 Bitmap.Config.ARGB_8888);
         return bitmap;
+    }
+
+    /**
+     * 高斯模糊 利用 RenderScript
+     * @return
+     */
+    private Bitmap gaussianBlur5(Bitmap bitmap){
+        Bitmap outBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(),
+                Bitmap.Config.ARGB_8888);
+
+        // Instantiate a new Renderscript
+        RenderScript rs = RenderScript.create(getApplicationContext());//RenderScript是Android在API 11之后加入的
+
+        // Create an Intrinsic Blur Script using the Renderscript
+        ScriptIntrinsicBlur blurScript = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+
+        // Create the Allocations (in/out) with the Renderscript and the in/out
+        // bitmaps
+        Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
+        Allocation allOut = Allocation.createFromBitmap(rs, outBitmap);
+
+        // Set the radius of the blur
+        blurScript.setRadius(25.f);
+
+        // Perform the Renderscript
+        blurScript.setInput(allIn);
+        blurScript.forEach(allOut);
+
+        // Copy the final bitmap created by the out Allocation to the outBitmap
+        allOut.copyTo(outBitmap);
+
+        // recycle the original bitmap
+        bitmap.recycle();
+
+        // After finishing everything, we destroy the Renderscript.
+        rs.destroy();
+
+        return outBitmap;
+    }
+
+    //叠加两个像素通道 第一个参数为基础 r、g或b任一通道数值  第二个参数为等待混合的 r、g或b任一通道数值 返回混合后的通道数值
+    private int mixChannel(int baseChannel,int mixChannel){
+        int mixedChannel = baseChannel + (baseChannel * mixChannel) / (255 - mixChannel);
+        mixedChannel = mixedChannel > 255 ? 255 : mixedChannel;
+        return mixedChannel;
+    }
+
+    //叠加两个颜色值数组
+    private void mixColor(int[] baseColor,int[] mixColor){
+        for (int i = 0, length = baseColor.length; i < length; ++i) {
+            int bColor = baseColor[i];
+            int br = (bColor & 0x00ff0000) >> 16;
+            int bg = (bColor & 0x0000ff00) >> 8;
+            int bb = (bColor & 0x000000ff);
+
+            int mColor = mixColor[i];
+            int mr = (mColor & 0x00ff0000) >> 16;
+            int mg = (mColor & 0x0000ff00) >> 8;
+            int mb = (mColor & 0x000000ff);
+
+            int nr = mixChannel(br, mr);
+            int ng = mixChannel(bg, mg);
+            int nb = mixChannel(bb, mb);
+
+            baseColor[i] = nr << 16 | ng << 8 | nb | 0xff000000;
+        }
+    }
+
+    //构造渐变图
+    private Bitmap createBitmap(){
+        int[] pixels = new int[256*256];
+
+        for(int i=0;i<256;i++){
+            for(int j=0;j<256;j++){
+                pixels[i*256+j] = j | 0xff000000;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(pixels, 256, 256,
+                Bitmap.Config.ARGB_8888);
+        return bitmap;
+    }
+
+    //将bitmap保存为图片
+    private void saveBitmap(Bitmap bitmap,String bitName) throws IOException
+    {
+        File file = new File("/sdcard/DCIM/Camera/"+bitName);
+
+        if(file.exists()){
+            //file.delete();
+            LogUtils.v("exist");
+        }
+        FileOutputStream out;
+        try{
+            out = new FileOutputStream(file);
+            if(bitmap.compress(Bitmap.CompressFormat.PNG, 90, out))
+            {
+                out.flush();
+                out.close();
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     //开启新的线程加载原图
