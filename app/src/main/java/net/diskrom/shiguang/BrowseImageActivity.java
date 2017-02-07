@@ -25,6 +25,11 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 
 public class BrowseImageActivity extends BaseActivity {
     private Bitmap srcImageBitmap;  //维护一个存储原图Bitmap的变量
@@ -110,6 +115,7 @@ public class BrowseImageActivity extends BaseActivity {
                         Bitmap bitmap = desaturate(bitmapOrigin);   //去色
                         Bitmap bitmap2 = reverseColor(bitmap);      //反相
                         Bitmap bitmap3 = gaussianBlur2(bitmap2);    //高斯模糊
+
                         browseImage.setImageBitmap(bitmap3);
                     }
                 });
@@ -119,7 +125,9 @@ public class BrowseImageActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Bitmap bitmapOrigin = ((GlideBitmapDrawable)browseImage.getDrawable()).getBitmap();
-                        Bitmap bitmap = gaussianBlur3(bitmapOrigin,50,false);
+                        Bitmap bitmap = createBitmap();
+                        //Bitmap bitmap2 = gaussianBlur3(bitmap,80,false);
+
                         browseImage.setImageBitmap(bitmap);
                     }
                 });
@@ -351,7 +359,7 @@ public class BrowseImageActivity extends BaseActivity {
 
     /**
      * 效果最佳
-     * 高斯模糊滤镜3
+     * 高斯模糊滤镜3 (stackblur 堆栈模糊算法)
      * @param sentBitmap        需要处理的Bitmap对象
      * @param radius            高斯模糊半径
      * @param canReuseInBitmap  处理结果应用到Bitmap本身
@@ -610,6 +618,45 @@ public class BrowseImageActivity extends BaseActivity {
         Bitmap bitmap = Bitmap.createBitmap(guassBlur, picWidth, picHeight,
                 Bitmap.Config.ARGB_8888);
         return bitmap;
+    }
+
+    //构造渐变图
+    private Bitmap createBitmap(){
+        int[] pixels = new int[256*256];
+
+        for(int i=0;i<256;i++){
+            for(int j=0;j<256;j++){
+                pixels[i*256+j] = j | 0xff000000;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(pixels, 256, 256,
+                Bitmap.Config.ARGB_8888);
+        return bitmap;
+    }
+
+    private void saveBitmap(Bitmap bitmap,String bitName) throws IOException
+    {
+        File file = new File("/sdcard/DCIM/Camera/"+bitName);
+        if(file.exists()){
+            file.delete();
+        }
+        FileOutputStream out;
+        try{
+            out = new FileOutputStream(file);
+            if(bitmap.compress(Bitmap.CompressFormat.PNG, 90, out))
+            {
+                out.flush();
+                out.close();
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     //开启新的线程加载原图
