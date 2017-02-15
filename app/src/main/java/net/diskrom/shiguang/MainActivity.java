@@ -179,4 +179,49 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 }
+#!/usr/bin/python
+        # -*- coding: UTF-8 -*-
+
+class matrix:
+        ''''计算乘方
+        base 底数
+        exponent 指数
+        '''
+        def mathPower(base,exponent):
+        result = 1;
+        i=1;
+        while i <= exponent:
+        result *= base;
+        i=i+1;
+        return result;
+
+        '''print matrix'''
+        def matrixPrint(self,matrix):
+        print '['
+        for i in matrix:
+        if type(i) == "<type 'list'>":
+        self.matrixPrint(i);
+        print i;
+        print ']'
+
+        '''去除一维列表中的重复值'''
+        def  array_unique(self,array):
+        array_ = [];
+        for i in array:
+        if  i not in array_:
+        array_.append(i);
+        return array_;
+
+        '''去除二维列表中的重复值'''
+        def multi_array_unique(self,array){
+        for i in array:
+        if type(i) == ''
+
+        }
+
+        matrix = matrix();
+        #matrix.matrixPrint([['a','b','c'],['a','b','c'],['a','b','c']]);
+        print matrix.array_unique(['a','b','c','d','c','e']);
+        #list = ['a','b','c'];
+        #print ','.join(list);
 
